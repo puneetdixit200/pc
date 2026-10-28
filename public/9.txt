@@ -1,0 +1,43 @@
+/*
+Program 9 - MPI Reduce and Allreduce
+Compile: mpicc -x c 9.txt -o p9
+Run:     mpirun -np 4 ./p9
+*/
+
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char **argv) {
+    int rank, value;
+    int sum, prod, mx, mn;
+    int all_sum, all_prod, all_mx, all_mn;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    value = rank + 1;
+
+    MPI_Reduce(&value, &sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&value, &prod, 1, MPI_INT, MPI_PROD, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&value, &mx, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&value, &mn, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+
+    if (rank == 0) {
+        printf("=== MPI_Reduce Results (on root only) ===\n");
+        printf("SUM = %d\n", sum);
+        printf("PROD = %d\n", prod);
+        printf("MAX = %d\n", mx);
+        printf("MIN = %d\n", mn);
+    }
+
+    MPI_Allreduce(&value, &all_sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&value, &all_prod, 1, MPI_INT, MPI_PROD, MPI_COMM_WORLD);
+    MPI_Allreduce(&value, &all_mx, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&value, &all_mn, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+
+    printf("Process %d: Allreduce Results: SUM=%d, PROD=%d, MAX=%d, MIN=%d\n",
+           rank, all_sum, all_prod, all_mx, all_mn);
+
+    MPI_Finalize();
+    return 0;
+}
